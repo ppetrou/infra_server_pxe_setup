@@ -1,0 +1,38 @@
+---
+# vars file for infra_server_pxe_setup
+
+interface: enp0s3
+domain: local
+pxe_server_ip: 192.168.1.230
+
+dhcp_start: 192.168.1.200
+dhcp_end: 192.168.1.220
+dhcp_mask: 255.255.255.0
+dhcp_lease: 1h
+
+gateway_ip: 0.0.0.0
+dns_server_ip: 192.168.1.254
+dns_forwarder_ip: 8.8.4.4
+broadcast_ip: 192.168.1.255
+ntp_server_ip: 0.0.0.0
+
+dhcp_options:
+  - name: Gateway
+    value: 3,{{ gateway_ip }}
+  - name: DNS
+    value: 6,{{ dns_server_ip }}
+  - name: Broadcast
+    value: 28,{{ broadcast_ip }}
+  - name: NTP
+    value: 42,{{ ntp_server_ip }}
+
+pxe_prompt: Press F8 for menu.
+pxe_prompt_timeout: 60
+
+architecture: x86PC
+pxe_service_message: "Install CentOS 7 from network server {{ pxe_server_ip }}"
+tftp_root: /var/lib/tftpboot
+
+centos_download_url: http://mirror.bytemark.co.uk/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso
+centos_iso_filename: CentOS-7-x86_64-Minimal-1810.iso
+test_installation_source_url: ftp://{{ pxe_server_ip }}/pub/CentOS_BuildTag

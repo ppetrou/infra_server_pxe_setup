@@ -1,0 +1,21 @@
+interface={{ interface }}
+#bind-interfaces
+domain={{ domain }}
+# DHCP range-leases
+dhcp-range={{ interface }},{{ dhcp_start }},{{ dhcp_end }},{{ dhcp_mask }},{{ dhcp_lease }}
+
+# PXE
+dhcp-boot=pxelinux.0,pxeserver,{{ pxe_server_ip }}
+
+{% for dhcp_option in dhcp_options %}
+# {{ dhcp_option.name }}
+dhcp-option={{ dhcp_option.value }}
+{% endfor %}
+
+server={{ dns_forwarder_ip }}
+
+pxe-prompt="{{ pxe_prompt }}", {{ pxe_prompt_timeout }}
+pxe-service={{ architecture }}, "{{ pxe_service_message }}", pxelinux
+enable-tftp
+tftp-root=/var/lib/tftpboot
+

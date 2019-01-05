@@ -1,0 +1,150 @@
+---
+# tasks file for infra_server_pxe_setup
+
+# Install and configure DNSMASQ Server
+- name: Install and configure DNSMASQ Server
+  package: 
+    name: dnsmasq
+    state: present
+
+# Generate DNSMASQ Config
+- name: Generate DNSMASQ Config
+  template:
+    src: templates/dnsmasq.conf.j2
+    dest: /etc/dnsmasq.conf
+
+# Install SYSLINUX Bootloaders
+
+- name: Install SYSLINUX Bootloaders
+  package: 
+    name: syslinux
+    state: present
+  
+- name: Stat /usr/share/syslinux exists.
+  stat:
+    path: /usr/share/syslinux
+  register: reg_syslinux
+
+- name: Check if /usr/share/syslinux directory exists. 
+  fail:
+    msg: /usr/share/syslinux is not present!! Please re-install syslinux boot loaders
+  when: not reg_syslinux.stat.exists
+
+# Install TFTP-Server and Populate it with SYSLINUX Bootloaders
+
+- name: Install TFTP-Server
+  package: 
+    name: tftp-server
+    state: present
+
+- name: Populate TFTP-Server with SYSLINUX Bootloaders
+  shell: cp -r /usr/share/syslinux/* /var/lib/tftpboot
+
+# Setup PXE Server Configuration File
+
+- name : Create the required directory pxelinux.cfg
+  file:
+    path: /var/lib/tftpboot/pxelinux.cfg
+    state: directory
+
+- name: Generate pxelinux default configuration
+  template:
+    src: templates/pxelinux.cfg.default.j2
+    dest: /var/lib/tftpboot/pxelinux.cfg/default
+
+# Add CentOS 7 Boot Images to PXE Server
+
+- name: Download Centos 7 ISO
+  get_url:
+    url: "{{ centos_download_url }}"
+    dest: /tmp/{{ centos_iso_filename }}
+
+- name: Mount Installation Media read-only
+  mount:
+    path: /mnt
+    src: /tmp/{{ centos_iso_filename }}
+    fstype: iso9660
+    opts: ro,noauto
+    state: mounted
+ 
+- name: Create the Centos 7 directory in TFTP server
+  file:
+    path: /var/lib/tftpboot/centos7
+    state: directory
+
+- name: Copy CentOS 7 bootable kernel and initrd images to TFTP Centos folder
+  shell: "{{ item }}"
+  with_items:
+    - cp /mnt/images/pxeboot/vmlinuz /var/lib/tftpboot/centos7
+    - cp /mnt/images/pxeboot/initrd.img /var/lib/tftpboot/centos7
+ 
+# Create CentOS 7 Local Mirror Installation Source
+
+- name: Install vsftpd
+  package: 
+    name: vsftpd
+    state: present
+
+- name: Copy Media mounted content to default ftp server path
+  shell: cp -r /mnt/* /var/ftp/pub/
+
+- name: Fix permissions in default ftp server path
+  file:
+    path: /var/ftp/pub/
+    recurse: yes
+    mode: 0755
+
+# Start and Enable Daemons System-Wide
+
+- name: Start and Enable Daemons System-Wide
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - dnsmasq
+    - vsftpd
+
+# Open Firewall
+
+- name: Add Services 
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - ftp  # Port 21
+    - dns  # Port 53
+    - dhcp # Port 67
+
+- name: Add Ports 
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - 69/udp    # Port for TFTP
+    - 4011/udp  # Port for ProxyDHCP
+
+- name: Apply Rules - Reload firewalld
+  systemd:
+    name: firewalld
+    state: reloaded
+
+# Test FTP Installation Source
+
+- name: Test FTP Installation Source
+  get_url:
+    url: "{{ test_installation_source_url }}"
+    dest: /tmp
+  register: reg_test_ftp_inst_source
+  failed_when: "'550' in reg_test_ftp_inst_source.msg"
+  
+# Unmount Installation Media
+- name: Unmount Installation Media
+  mount:
+    path: /mnt
+    src: /tmp/CentOS-7-x86_64-Minimal-1810.iso
+    fstype: iso9660
+    opts: ro,noauto
+    state: unmounted
