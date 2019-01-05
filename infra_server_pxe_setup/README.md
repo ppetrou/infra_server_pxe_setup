@@ -8,6 +8,10 @@ Simple role to setup a PXE Boot Server supporting the following configurations:
 - Install CentOS 7 x64 with Local Repo using VNC
 - Boot from local drive
 
+Is it based on the following blog.
+
+https://www.tecmint.com/install-pxe-network-boot-server-in-centos-7/
+
 Requirements
 ------------
 
