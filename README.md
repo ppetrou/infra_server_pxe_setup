@@ -6,11 +6,17 @@ Simple role to setup a PXE Boot Server supporting the following configurations:
 - Install CentOS 7 x64 with Local Repo
 - Install CentOS 7 x64 with http://mirror.centos.org Repo
 - Install CentOS 7 x64 with Local Repo using VNC
+- Install CentOS 7 x64 with Local Repo using Kickstart
 - Boot from local drive
 
-Is it based on the following blog:
+Is it based on the following blogs:
 
 https://www.tecmint.com/install-pxe-network-boot-server-in-centos-7/
+https://www.tecmint.com/multiple-centos-installations-using-kickstart/
+
+NOTE: Kickstart implementation is experimental. The anaconda-ks.cfg template needs to evolve so it can be customized using variables.
+At the moment of writing it supports one sample configuration and not any machine configuration based on user input.
+User Management, Network Information, Disk Management and Packages need to be parameterized.
 
 Requirements
 ------------
