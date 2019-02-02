@@ -21,4 +21,9 @@ kernel centos7/vmlinuz
 append  initrd=centos7/initrd.img method=ftp://{{ pxe_server_ip }}/pub devfs=nomount inst.vnc inst.vncpassword=password
 
 label 4
-menu label ^4) Boot from local drive
+menu label ^4) Install CentOS 7 x64 with Local Repo using Kickstart
+kernel centos7/vmlinuz
+append initrd=centos7/initrd.img inst.ks=ftp://{{ pxe_server_ip }}/pub/anaconda-ks.cfg inst.vnc inst.vncpassword=password
+
+label 5
+menu label ^5) Boot from local drive

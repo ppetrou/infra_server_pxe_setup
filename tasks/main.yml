@@ -82,7 +82,31 @@
 
 - name: Copy Media mounted content to default ftp server path
   shell: cp -r /mnt/* /var/ftp/pub/
+  
+# Create and Copy Kiskstart File to FTP Server Path
+- name: Create and Copy Kiskstart File to FTP Server Path
+  template:
+    src: templates/anaconda-ks.cfg.j2
+    dest: /var/ftp/pub/anaconda-ks.cfg
 
+# Install pykickstart
+- name: Install pykickstart
+  package:
+    name: pykickstart
+    state: present
+
+# Validate Kickstart file
+- name: Validate Kickstart file
+  shell: ksvalidator /var/ftp/pub/anaconda-ks.cfg
+  register: reg_validate_ks  
+
+# Check if kickstart validation passed
+- name: Check if kickstart validation passed
+  fail:
+    msg: "Kickstart Validation failed with {{ reg_validate_ks.stdout }}"
+  when: reg_validate_ks.stdout_lines|count > 0
+
+# Fix permissions in default ftp server path
 - name: Fix permissions in default ftp server path
   file:
     path: /var/ftp/pub/
