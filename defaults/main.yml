@@ -1,0 +1,24 @@
+---
+# defaults file for sample_role
+
+# PXE Server Configuration
+interface: enp0s3               # PXE Server NIC
+domain: local                   # PXE Server Domain 
+pxe_server_ip: 192.168.1.230    # PXE Server IP Address. It must match the interface NIC address!
+
+# DHCP Server Configuration
+dhcp_start: 192.168.1.200       # Start Address
+dhcp_end: 192.168.1.220         # End Address
+dhcp_mask: 255.255.255.0        # Mask
+dhcp_lease: 1h                  # Lease Time
+
+gateway_ip: 0.0.0.0             # Gateway IP
+dns_server_ip: 192.168.1.254    # DNS Server IP
+dns_forwarder_ip: 8.8.4.4       # DNS Forwarder
+broadcast_ip: 192.168.1.255     # Broadcast IP
+ntp_server_ip: 0.0.0.0          # NTP Server
+
+# Centos 7
+centos_download_url: http://mirror.bytemark.co.uk/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-Minimal-1810.iso    # Centos Download URL
+centos_iso_filename: CentOS-7-x86_64-Minimal-1810.iso                                                             # Centos ISO Filename
+centos_test_installation_source_url: ftp://{{ pxe_server_ip }}/pub/CentOS_BuildTag                                # The URL to test if the media is available on the server

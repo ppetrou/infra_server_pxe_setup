@@ -14,7 +14,6 @@
     dest: /etc/dnsmasq.conf
 
 # Install SYSLINUX Bootloaders
-
 - name: Install SYSLINUX Bootloaders
   package: 
     name: syslinux
@@ -31,29 +30,26 @@
   when: not reg_syslinux.stat.exists
 
 # Install TFTP-Server and Populate it with SYSLINUX Bootloaders
-
 - name: Install TFTP-Server
   package: 
     name: tftp-server
     state: present
 
 - name: Populate TFTP-Server with SYSLINUX Bootloaders
-  shell: cp -r /usr/share/syslinux/* /var/lib/tftpboot
+  shell: cp -r /usr/share/syslinux/* {{ tftp_root }}
 
 # Setup PXE Server Configuration File
-
 - name : Create the required directory pxelinux.cfg
   file:
-    path: /var/lib/tftpboot/pxelinux.cfg
+    path: "{{ tftp_root }}/pxelinux.cfg"
     state: directory
 
 - name: Generate pxelinux default configuration
   template:
     src: templates/pxelinux.cfg.default.j2
-    dest: /var/lib/tftpboot/pxelinux.cfg/default
+    dest: "{{ tftp_root }}/pxelinux.cfg/default"
 
 # Add CentOS 7 Boot Images to PXE Server
-
 - name: Download Centos 7 ISO
   get_url:
     url: "{{ centos_download_url }}"
@@ -69,17 +65,16 @@
  
 - name: Create the Centos 7 directory in TFTP server
   file:
-    path: /var/lib/tftpboot/centos7
+    path: "{{ tftp_root }}/centos7"
     state: directory
 
 - name: Copy CentOS 7 bootable kernel and initrd images to TFTP Centos folder
   shell: "{{ item }}"
   with_items:
-    - cp /mnt/images/pxeboot/vmlinuz /var/lib/tftpboot/centos7
-    - cp /mnt/images/pxeboot/initrd.img /var/lib/tftpboot/centos7
+    - cp /mnt/images/pxeboot/vmlinuz {{ tftp_root }}/centos7
+    - cp /mnt/images/pxeboot/initrd.img {{ tftp_root }}/centos7
  
 # Create CentOS 7 Local Mirror Installation Source
-
 - name: Install vsftpd
   package: 
     name: vsftpd
@@ -95,7 +90,6 @@
     mode: 0755
 
 # Start and Enable Daemons System-Wide
-
 - name: Start and Enable Daemons System-Wide
   systemd:
     name: "{{ item }}"
@@ -106,7 +100,6 @@
     - vsftpd
 
 # Open Firewall
-
 - name: Add Services 
   firewalld:
     service: "{{ item }}"
@@ -132,10 +125,9 @@
     state: reloaded
 
 # Test FTP Installation Source
-
 - name: Test FTP Installation Source
   get_url:
-    url: "{{ test_installation_source_url }}"
+    url: "{{ centos_test_installation_source_url }}"
     dest: /tmp
   register: reg_test_ftp_inst_source
   failed_when: "'550' in reg_test_ftp_inst_source.msg"
