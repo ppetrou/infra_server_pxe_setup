@@ -11,7 +11,7 @@ Simple role to setup a PXE Boot Server supporting the following configurations:
 
 Is it based on the following blogs:
 
-https://www.tecmint.com/install-pxe-network-boot-server-in-centos-7/
+https://www.tecmint.com/install-pxe-network-boot-server-in-centos-7/ \
 https://www.tecmint.com/multiple-centos-installations-using-kickstart/
 
 NOTE: Kickstart implementation is experimental. The anaconda-ks.cfg template needs to evolve so it can be customized using variables.
